@@ -1,12 +1,36 @@
 #include "LobbyGameMode.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "Blueprint/UserWidget.h"
+#include "PlayerCharacterSaveGame.h"
+#include "Kismet/GameplayStatics.h"
 
 ALobbyGameMode::ALobbyGameMode()
 {
     // Set default values
     IsPrivate = false;
     IsGameStarted = false;
+}
+
+void ALobbyGameMode::BeginPlay() {
+    Super::BeginPlay();
+
+    if (BP_HUD_MainMenu) {
+        UUserWidget* MainMenu = CreateWidget<UUserWidget>(GetWorld(), BP_HUD_MainMenu);
+        if (MainMenu) {
+            MainMenu->AddToViewport();
+        }
+    }
+
+    LoadPlayerCharacters();
+}
+
+void ALobbyGameMode::LoadPlayerCharacters()
+{
+    UPlayerCharacterSaveGame* LoadGameInstance = Cast<UPlayerCharacterSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("PlayerCharacterSaveSlot"), 0));
+
+    PlayerCharacters = LoadGameInstance->PlayerCharacters;
+    
 }
 
 void ALobbyGameMode::CreateLobby(bool bIsPrivate)
@@ -59,4 +83,16 @@ FString ALobbyGameMode::GenerateLobbyID()
 {
     // Generate a unique lobby ID
     return FString::Printf(TEXT("%08X"), FMath::Rand());
+}
+
+
+void ALobbyGameMode::SavePlayerCharacters()
+{
+    UPlayerCharacterSaveGame* SaveGameInstance = Cast<UPlayerCharacterSaveGame>(UGameplayStatics::CreateSaveGameObject(UPlayerCharacterSaveGame::StaticClass()));
+
+    if (SaveGameInstance)
+    {
+        SaveGameInstance->PlayerCharacters = PlayerCharacters;
+        UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("PlayerCharacterSaveSlot"), 0);
+    }
 }
