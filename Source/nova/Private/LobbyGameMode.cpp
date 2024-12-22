@@ -1,43 +1,21 @@
 #include "LobbyGameMode.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
-#include "Blueprint/UserWidget.h"
 #include "PlayerCharacterSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 
 ALobbyGameMode::ALobbyGameMode()
 {
     // Set default values
-    IsPrivate = false;
-    IsGameStarted = false;
+    bIsPrivate = false;
+    bIsGameStarted = false;
 }
 
-void ALobbyGameMode::BeginPlay() {
-    Super::BeginPlay();
-
-    if (BP_HUD_MainMenu) {
-        UUserWidget* MainMenu = CreateWidget<UUserWidget>(GetWorld(), BP_HUD_MainMenu);
-        if (MainMenu) {
-            MainMenu->AddToViewport();
-        }
-    }
-
-    LoadPlayerCharacters();
-}
-
-void ALobbyGameMode::LoadPlayerCharacters()
-{
-    UPlayerCharacterSaveGame* LoadGameInstance = Cast<UPlayerCharacterSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("PlayerCharacterSaveSlot"), 0));
-
-    PlayerCharacters = LoadGameInstance->PlayerCharacters;
-    
-}
-
-void ALobbyGameMode::CreateLobby(bool bIsPrivate)
+void ALobbyGameMode::CreateLobby(bool isPrivate)
 {
     // Implement Steam lobby creation logic here
-    LobbyID = GenerateLobbyID();
-    IsPrivate = bIsPrivate;
+    this->LobbyID = GenerateLobbyID();
+    this->bIsPrivate = isPrivate;
     // Store lobby code and other details
 }
 
@@ -53,13 +31,13 @@ void ALobbyGameMode::LeaveLobby()
     this->LobbyID.Empty();
 }
 
-void ALobbyGameMode::SetPlayerReady(bool bIsReady)
+void ALobbyGameMode::SetPlayerReady(bool isReady)
 {
     // Set the player as ready
     APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
     if (PlayerController)
     {
-        PlayerReady.Add(PlayerController->GetName(), bIsReady);
+        PlayerReady.Add(PlayerController->GetName(), isReady);
     }
 }
 
@@ -75,24 +53,66 @@ void ALobbyGameMode::StartGame()
     }
 
     // Start the game
-    IsGameStarted = true;
+    bIsGameStarted = true;
     // Implement game start logic here
 }
-
-FString ALobbyGameMode::GenerateLobbyID()
-{
-    // Generate a unique lobby ID
-    return FString::Printf(TEXT("%08X"), FMath::Rand());
-}
-
 
 void ALobbyGameMode::SavePlayerCharacters()
 {
     UPlayerCharacterSaveGame* SaveGameInstance = Cast<UPlayerCharacterSaveGame>(UGameplayStatics::CreateSaveGameObject(UPlayerCharacterSaveGame::StaticClass()));
-
     if (SaveGameInstance)
     {
-        SaveGameInstance->PlayerCharacters = PlayerCharacters;
+        // Populate SaveGameInstance with data from PlayerData
+        SaveGameInstance->PlayerCharacters.Empty();
+        for (const auto& Entry : PlayerData)
+        {
+            SaveGameInstance->PlayerCharacters.Add(Entry.Value);
+        }
+
         UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("PlayerCharacterSaveSlot"), 0);
     }
+}
+
+TMap<FString, FPlayerCharacterData> ALobbyGameMode::LoadPlayerCharacters()
+{
+    UPlayerCharacterSaveGame* LoadGameInstance = Cast<UPlayerCharacterSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("PlayerCharacterSaveSlot"), 0));
+
+    if (LoadGameInstance)
+    {
+        for (const auto& Entry : LoadGameInstance->PlayerCharacters)
+        {
+            PlayerData.Add(Entry.CharacterName, Entry);
+        }
+    }
+    return PlayerData;
+}
+
+FString ALobbyGameMode::GenerateLobbyID()
+{
+    return FString::Printf(TEXT("%08X"), FMath::Rand());
+}
+
+bool ALobbyGameMode::AddNewPlayer(FPlayerCharacterData playerData)
+{
+    if (PlayerData.Contains(playerData.CharacterName))
+    {
+        return false;
+    }
+
+    PlayerData.Add(playerData.CharacterName, playerData);
+
+    SavePlayerCharacters();
+    return true;
+}
+
+bool ALobbyGameMode::RemovePlayerByName(FText name)
+{
+    FString PlayerName = name.ToString();
+    if (PlayerData.Contains(PlayerName))
+    {
+        PlayerData.Remove(PlayerName);
+        SavePlayerCharacters(); // Save the updated player data
+        return true;
+    }
+    return false;
 }

@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,28 +10,11 @@ class NOVA_API ALobbyGameMode : public AGameModeBase
 {
     GENERATED_BODY()
 
-protected:
-    virtual void BeginPlay() override;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-    TSubclassOf<class UUserWidget> BP_HUD_MainMenu;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Characters")
-    TArray<FPlayerCharacterData> PlayerCharacters;
-
 public:
     ALobbyGameMode();
 
-    TArray<APlayerController*> Players;
-    TMap<FString, bool> PlayerReady;
-    FString LobbyID;
-    FString LobbyOwner;
-    bool IsPrivate;
-    bool IsGameStarted;
-    FString GenerateLobbyID();
-
     UFUNCTION(BlueprintCallable, Category = "Lobby")
-    void CreateLobby(bool bIsPrivate);
+    void CreateLobby(bool isPrivate);
 
     UFUNCTION(BlueprintCallable, Category = "Lobby")
     void JoinLobby(FString ID);
@@ -42,15 +23,31 @@ public:
     void LeaveLobby();
 
     UFUNCTION(BlueprintCallable, Category = "Lobby")
-    void SetPlayerReady(bool bIsReady);
+    void SetPlayerReady(bool isReady);
 
     UFUNCTION(BlueprintCallable, Category = "Lobby")
     void StartGame();
 
-    UFUNCTION(BlueprintCallable, Category = "Characters")
-    void LoadPlayerCharacters();
-
-    UFUNCTION(BlueprintCallable, Category = "Characters")
+    UFUNCTION(BlueprintCallable, Category = "Lobby")
     void SavePlayerCharacters();
+
+    UFUNCTION(BlueprintCallable, Category = "Save")
+    TMap<FString, FPlayerCharacterData> LoadPlayerCharacters();
+
+    UFUNCTION(BlueprintCallable, Category = "Save")
+    bool AddNewPlayer(FPlayerCharacterData playerData);
+
+    UFUNCTION(BlueprintCallable, Category = "Save")
+    bool RemovePlayerByName(FText name);
+
+private:
+    FString GenerateLobbyID();
+
+    FString LobbyID;
+    bool bIsPrivate;
+    bool bIsGameStarted;
+    TMap<FString, bool> PlayerReady;
+    TMap<FString, FPlayerCharacterData> PlayerData;
+    FPlayerCharacterData CurrentPlayer;
 };
 

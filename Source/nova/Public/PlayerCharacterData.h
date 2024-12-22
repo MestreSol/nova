@@ -1,9 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "PlayerCharacterData.generated.h"
 
 USTRUCT(BlueprintType)
@@ -20,7 +17,36 @@ struct FPlayerCharacterData
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
     FString Class;
 
-    // Adicione outros atributos conforme necessário
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributs")
+    int32 STR;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributs")
+    int32 CON;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributs")
+    int32 SIZ;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributs")
+    int32 DEX;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributs")
+    int32 APP;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributs")
+    int32 INT;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributs")
+    int32 POW;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Atributs")
+    int32 EDU;
 };
+
+
+
+
+
+
+
 
 
