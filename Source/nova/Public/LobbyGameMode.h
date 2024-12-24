@@ -5,6 +5,7 @@
 #include "PlayerCharacterData.h"
 #include "LobbyGameMode.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerChanged, const FPlayerCharacterData&, PlayerData);
 UCLASS()
 class NOVA_API ALobbyGameMode : public AGameModeBase
 {
@@ -14,7 +15,7 @@ public:
     ALobbyGameMode();
 
     UFUNCTION(BlueprintCallable, Category = "Lobby")
-    void CreateLobby(bool isPrivate);
+    void CreateLobby(bool bIsPrivate);
 
     UFUNCTION(BlueprintCallable, Category = "Lobby")
     void JoinLobby(FString ID);
@@ -23,7 +24,7 @@ public:
     void LeaveLobby();
 
     UFUNCTION(BlueprintCallable, Category = "Lobby")
-    void SetPlayerReady(bool isReady);
+    void SetPlayerReady(bool bIsReady);
 
     UFUNCTION(BlueprintCallable, Category = "Lobby")
     void StartGame();
@@ -40,8 +41,16 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Save")
     bool RemovePlayerByName(FText name);
 
+    UFUNCTION(BlueprintCallable, Category = "Steam")
+    FString GetSteamUsername();
+
+    UFUNCTION(BlueprintCallable, Category = "Steam")
+    UTexture2D* GetSteamAvatar();
+    void NotifyPlayerJoined(const FPlayerCharacterData& Data);
+    void NotifyPlayerLeft(const FPlayerCharacterData& Data);
+
 private:
-    FString GenerateLobbyID();
+    static FString GenerateLobbyID();
 
     FString LobbyID;
     bool bIsPrivate;
@@ -49,5 +58,16 @@ private:
     TMap<FString, bool> PlayerReady;
     TMap<FString, FPlayerCharacterData> PlayerData;
     FPlayerCharacterData CurrentPlayer;
+    TSharedPtr<const FUniqueNetId> UserId; // Adicionado para armazenar o UserId
+    
+public:
+    FOnPlayerChanged OnPlayerJoined;
+    FOnPlayerChanged OnPlayerLeft;
+    
 };
+
+
+
+
+
 

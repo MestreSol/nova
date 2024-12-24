@@ -8,7 +8,16 @@ public class nova : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "OnlineSubsystem", "OnlineSubsystemUtils", "UMG" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core", 
+			"CoreUObject", 
+			"Engine", 
+			"InputCore", 
+			"OnlineSubsystem", 
+			"OnlineSubsystemUtils", 
+			"UMG",
+			"HTTP",
+			"ImageWrapper" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "OnlineSubsystem" });
 
